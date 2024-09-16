@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: code-server
+spec:
+  containers:
+  - name: code-server
+    image: python:3.11-slim
+    ports:
+    - containerPort: 8080
+    volumeMounts:
+    - name: code-server-storage
+      mountPath: /home/coder/project
+    command:
+    - /bin/sh
+    - -c
+    - |
+      apt-get update && \
+      apt-get install -y curl tar && \
+      # Install code-server
+      curl -fsSL https://code-server.dev/install.sh | sh && \
+      # Install aichat
+      curl -fsSL https://github.com/sigoden/aichat/releases/download/v0.22.0-rc3/aichat-v0.22.0-rc3-x86_64-unknown-linux-musl.tar.gz -o /tmp/aichat.tar.gz && \
+      tar -xzf /tmp/aichat.tar.gz -C /usr/local/bin && \
+      # Install Python extension
+      code-server --install-extension ms-python.python && \
+      # Start code-server
+      code-server --bind-addr 0.0.0.0:8080 --auth none
+  volumes:
+  - name: code-server-storage
+    emptyDir:
+      sizeLimit: 2Gi
